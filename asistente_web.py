@@ -1,17 +1,9 @@
 
 from flask import Flask, request, jsonify, render_template
-import pyttsx3
 from datetime import datetime
 import pytz
 
 app = Flask(__name__)
-
-voz = pyttsx3.init()
-voz.setProperty("rate", 150)
-
-def hablar(texto):
-    voz.say(texto)
-    voz.runAndWait()
 
 def procesar_comando(comando):
     comando = comando.lower()
@@ -59,7 +51,6 @@ def comando():
         data = request.get_json(force=True)
         texto_usuario = data.get("texto", "")
         respuesta = procesar_comando(texto_usuario)
-        hablar(respuesta)
         return jsonify({"respuesta": respuesta})
     except Exception as e:
         print(f"Error en comando: {e}")
