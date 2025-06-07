@@ -48,7 +48,10 @@ def index():
 @app.route("/api/comando", methods=["POST"])
 def comando():
     try:
-        data = request.get_json(force=True)
+        data = request.get_json()
+        if not data:
+            return jsonify({"respuesta": "No se recibió ningún dato válido."}), 400
+
         texto_usuario = data.get("texto", "")
         respuesta = procesar_comando(texto_usuario)
         return jsonify({"respuesta": respuesta})
