@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,6 +15,10 @@
       color: #FDD528;
       font-weight: bold;
     }
+    h6 {
+      color: #FDD528;
+      font-weight: bold;
+    }
     .btn-primary {
       background-color: #E4AE23;
       border: none;
@@ -26,16 +31,27 @@
       background-color: #040A19;
       border-radius: 16px;
     }
+    .bot-img {
+      max-width: 120px;
+      margin-bottom: 15px;
+    }
   </style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center vh-100">
   <div class="card shadow p-4 text-center" style="width: 100%; max-width: 420px;">
-    <h1 class="mb-3">Duki Bot</h1>
+    <h1 class="mb-2">Duki Bot</h1>
+    <img src="/static/img/bot.png" alt="Duki Bot" class="bot-img mx-auto d-block">
+    <h6 class="mb-3">Bienvenido al sistema de chat por voz, para resolver tu duda por favor escribe o haz click en "Hablar" y di tu duda, después de unos segundos te responderemos.</h6>
 
     <form id="formularioTexto" class="mb-3">
       <input type="text" id="textoEntrada" class="form-control mb-2" placeholder="Escribe tu pregunta..." required>
       <button type="submit" class="btn btn-primary w-100">Enviar</button>
     </form>
+
+    <button id="botonCarga" class="btn btn-primary w-100 mb-2 d-none" type="button" disabled>
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      Cargando...
+    </button>
 
     <div class="d-grid mb-3">
       <button class="btn btn-primary" onclick="iniciarReconocimiento()">Hablar</button>
@@ -47,49 +63,6 @@
     </div>
   </div>
 
-  <script>
-    document.getElementById("formularioTexto").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const texto = document.getElementById("textoEntrada").value;
-      enviarComando(texto);
-      document.getElementById("textoEntrada").value = "";
-    });
-
-    function iniciarReconocimiento() {
-      const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      reconocimiento.lang = 'es-ES';
-      reconocimiento.start();
-
-      reconocimiento.onresult = function(event) {
-        const texto = event.results[0][0].transcript;
-        enviarComando(texto);
-      };
-
-      reconocimiento.onerror = function(event) {
-        alert('Error al reconocer voz: ' + event.error);
-      };
-    }
-
-    function enviarComando(texto) {
-      fetch('/api/comando', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texto })
-      })
-      .then(response => response.json())
-      .then(data => {
-        const respuesta = data.respuesta;
-        document.getElementById("respuesta").textContent = respuesta;
-        document.getElementById("respuestaBox").classList.remove("d-none");
-        hablar(respuesta);
-      });
-    }
-
-    function hablar(texto) {
-      const voz = new SpeechSynthesisUtterance(texto);
-      voz.lang = 'es-ES';
-      speechSynthesis.speak(voz);
-    }
-  </script>
+  <script src="/static/js/main.js"></script>
 </body>
 </html>
