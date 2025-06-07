@@ -1,43 +1,48 @@
 
 document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("formularioTexto").addEventListener("submit", function(e) {
+  const formulario = document.getElementById("formularioTexto");
+  const entradaTexto = document.getElementById("textoEntrada");
+  const respuestaBox = document.getElementById("respuestaBox");
+  const respuestaTexto = document.getElementById("respuesta");
+  const botonCarga = document.getElementById("botonCarga");
+  const botonEnviar = document.querySelector('button[type="submit"]');
+
+  formulario.addEventListener("submit", function (e) {
     e.preventDefault();
-    const texto = document.getElementById("textoEntrada").value;
-    enviarComando(texto);
-    document.getElementById("textoEntrada").value = "";
+    const texto = entradaTexto.value.trim();
+    if (texto !== "") {
+      limpiarRespuesta();
+      enviarComando(texto);
+      entradaTexto.value = "";
+    }
   });
 
   function iniciarReconocimiento() {
-    document.getElementById("botonCarga").classList.remove("d-none");
-    document.querySelector('button[type="submit"]').classList.add("d-none");
-
+    limpiarRespuesta();
+    mostrarCarga();
     const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     reconocimiento.lang = 'es-ES';
     reconocimiento.start();
 
-    reconocimiento.onresult = function(event) {
+    reconocimiento.onresult = function (event) {
       const texto = event.results[0][0].transcript;
       enviarComando(texto);
     };
 
-    reconocimiento.onerror = function(event) {
+    reconocimiento.onerror = function (event) {
       alert('Error al reconocer voz: ' + event.error);
-      document.getElementById("botonCarga").classList.add("d-none");
-      document.querySelector('button[type="submit"]').classList.remove("d-none");
+      ocultarCarga();
     };
 
-    reconocimiento.onend = function() {
-      // Si no se reconoce nada, ocultar spinner
-      document.getElementById("botonCarga").classList.add("d-none");
-      document.querySelector('button[type="submit"]').classList.remove("d-none");
+    reconocimiento.onend = function () {
+      ocultarCarga();
     };
   }
 
   window.iniciarReconocimiento = iniciarReconocimiento;
 
   function enviarComando(texto) {
-    document.getElementById("botonCarga").classList.remove("d-none");
-    document.querySelector('button[type="submit"]').classList.add("d-none");
+    mostrarCarga();
 
     fetch('/api/comando', {
       method: 'POST',
@@ -46,9 +51,9 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .then(response => response.json())
     .then(data => {
-      const respuesta = data.respuesta;
-      document.getElementById("respuesta").textContent = respuesta;
-      document.getElementById("respuestaBox").classList.remove("d-none");
+      const respuesta = data.respuesta || "No se obtuvo respuesta.";
+      respuestaTexto.textContent = respuesta;
+      respuestaBox.classList.remove("d-none");
       hablar(respuesta);
     })
     .catch((error) => {
@@ -56,12 +61,27 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error(error);
     })
     .finally(() => {
-      document.getElementById("botonCarga").classList.add("d-none");
-      document.querySelector('button[type="submit"]').classList.remove("d-none");
+      ocultarCarga();
     });
   }
 
+  function limpiarRespuesta() {
+    respuestaTexto.textContent = "";
+    respuestaBox.classList.add("d-none");
+  }
+
+  function mostrarCarga() {
+    botonCarga.classList.remove("d-none");
+    botonEnviar.classList.add("d-none");
+  }
+
+  function ocultarCarga() {
+    botonCarga.classList.add("d-none");
+    botonEnviar.classList.remove("d-none");
+  }
+
   function hablar(texto) {
+    if (!texto) return;
     const voz = new SpeechSynthesisUtterance(texto);
     voz.lang = 'es-ES';
     speechSynthesis.speak(voz);
