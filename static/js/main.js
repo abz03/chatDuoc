@@ -4,46 +4,50 @@ document.addEventListener("DOMContentLoaded", function () {
   const entradaTexto = document.getElementById("textoEntrada");
   const respuestaBox = document.getElementById("respuestaBox");
   const respuestaTexto = document.getElementById("respuesta");
-  const botonCarga = document.getElementById("botonCarga");
-  const botonEnviar = document.querySelector('button[type="submit"]');
+
+  const botonEnviar = document.getElementById("botonEnviar");
+  const spinnerEnviar = document.getElementById("spinnerEnviar");
+
+  const botonHablar = document.getElementById("botonHablar");
+  const spinnerHablar = document.getElementById("spinnerHablar");
 
   formulario.addEventListener("submit", function (e) {
     e.preventDefault();
     const texto = entradaTexto.value.trim();
     if (texto !== "") {
       limpiarRespuesta();
-      enviarComando(texto);
+      mostrarCargaTexto();
+      enviarComando(texto, ocultarCargaTexto);
       entradaTexto.value = "";
     }
   });
 
   function iniciarReconocimiento() {
     limpiarRespuesta();
-    mostrarCarga();
+    mostrarCargaHablar();
+
     const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     reconocimiento.lang = 'es-ES';
     reconocimiento.start();
 
     reconocimiento.onresult = function (event) {
       const texto = event.results[0][0].transcript;
-      enviarComando(texto);
+      enviarComando(texto, ocultarCargaHablar);
     };
 
     reconocimiento.onerror = function (event) {
       alert('Error al reconocer voz: ' + event.error);
-      ocultarCarga();
+      ocultarCargaHablar();
     };
 
     reconocimiento.onend = function () {
-      ocultarCarga();
+      ocultarCargaHablar();
     };
   }
 
   window.iniciarReconocimiento = iniciarReconocimiento;
 
-  function enviarComando(texto) {
-    mostrarCarga();
-
+  function enviarComando(texto, callbackFinCarga) {
     fetch('/api/comando', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -61,7 +65,9 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error(error);
     })
     .finally(() => {
-      ocultarCarga();
+      if (typeof callbackFinCarga === 'function') {
+        callbackFinCarga();
+      }
     });
   }
 
@@ -70,14 +76,24 @@ document.addEventListener("DOMContentLoaded", function () {
     respuestaBox.classList.add("d-none");
   }
 
-  function mostrarCarga() {
-    botonCarga.classList.remove("d-none");
+  function mostrarCargaTexto() {
     botonEnviar.classList.add("d-none");
+    spinnerEnviar.classList.remove("d-none");
   }
 
-  function ocultarCarga() {
-    botonCarga.classList.add("d-none");
+  function ocultarCargaTexto() {
+    spinnerEnviar.classList.add("d-none");
     botonEnviar.classList.remove("d-none");
+  }
+
+  function mostrarCargaHablar() {
+    botonHablar.classList.add("d-none");
+    spinnerHablar.classList.remove("d-none");
+  }
+
+  function ocultarCargaHablar() {
+    spinnerHablar.classList.add("d-none");
+    botonHablar.classList.remove("d-none");
   }
 
   function hablar(texto) {

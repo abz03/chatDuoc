@@ -45,16 +45,20 @@
 
     <form id="formularioTexto" class="mb-3">
       <input type="text" id="textoEntrada" class="form-control mb-2" placeholder="Escribe tu pregunta..." required>
-      <button type="submit" class="btn btn-primary w-100">Enviar</button>
+
+      <button id="botonEnviar" type="submit" class="btn btn-primary w-100">Enviar</button>
+      <button id="spinnerEnviar" class="btn btn-primary w-100 d-none" type="button" disabled>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Enviando...
+      </button>
     </form>
 
-    <button id="botonCarga" class="btn btn-primary w-100 mb-2 d-none" type="button" disabled>
-      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-      Cargando...
-    </button>
-
     <div class="d-grid mb-3">
-      <button class="btn btn-primary" onclick="iniciarReconocimiento()">Hablar</button>
+      <button id="botonHablar" class="btn btn-primary" onclick="iniciarReconocimiento()">Hablar</button>
+      <button id="spinnerHablar" class="btn btn-primary d-none" type="button" disabled>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Escuchando...
+      </button>
     </div>
 
     <div class="alert alert-info text-center d-none" id="respuestaBox">

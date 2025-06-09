@@ -37,7 +37,10 @@ def procesar_comando(comando):
 
     elif ("modificaciones horarias" in comando or "beneficios" in comando or "becas" in comando or "gratuidad" in comando or "justificaciones" in comando):
         return "Para modificaciones horarias, beneficios estudiantiles, becas, gratuidad o presentar justificaciones, dirígete al Centro Académico en la sede principal de Plaza Vespucio, quinto piso."
-
+    
+    elif ("Problema con cuenta" in comando):
+        return "Para Problema con cuenta dirígete al Servicios digitales en la sede Bullevard de Plaza Vespucio, tercer piso."
+    
     else:
         return "No entendí el comando. ¿Puedes repetirlo?"
 
