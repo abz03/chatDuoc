@@ -44,8 +44,13 @@ def procesar_comando(comando):
     elif ("modificaciones horarias" in comando or "beneficios" in comando or "becas" in comando or "gratuidad" in comando or "justificaciones" in comando):
         return "Para modificaciones horarias, beneficios estudiantiles, becas, gratuidad o presentar justificaciones, dirígete al Centro Académico en la sede principal de Plaza Vespucio, quinto piso."
     
-    elif ("cuenta duoc" in comando or "correo" in comando):
-        return "Para Problema con tu cuenta Duoc o correo dirígete al Servicios digitales en la sede Boulevard de Plaza Vespucio, tercer piso."
+    elif (
+    ("cuenta" in comando and "duoc" in comando) or
+    ("problema" in comando and "cuenta" in comando) or
+    ("correo" in comando and "institucional" in comando) or
+    ("correo" in comando) or
+    ("cuenta" in comando and "institucional" in comando)):
+        return "Para problema con tu cuenta Duoc o correo, dirígete a Servicios digitales en la sede Boulevard de Plaza Vespucio, tercer piso; también puedes ir a la sede principal de Plaza Vespucio, en el quinto piso."
     
     elif ("bicicleta" in comando):
         return "Para dejar tu bicicleta en Duoc, tienes dos opciones: dirígete al bicicletero en la sede Boulevard de Plaza Vespucio en el primer piso o ve a la sede principal en el quinto piso. No olvides llevar tu candado."
