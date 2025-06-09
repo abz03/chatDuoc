@@ -26,23 +26,28 @@ document.addEventListener("DOMContentLoaded", function () {
     limpiarRespuesta();
     mostrarCargaHablar();
 
-    const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    reconocimiento.lang = 'es-ES';
-    reconocimiento.start();
+    try {
+      const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      reconocimiento.lang = 'es-ES';
+      reconocimiento.start();
 
-    reconocimiento.onresult = function (event) {
-      const texto = event.results[0][0].transcript;
-      enviarComando(texto, ocultarCargaHablar);
-    };
+      reconocimiento.onresult = function (event) {
+        const texto = event.results[0][0].transcript;
+        enviarComando(texto, ocultarCargaHablar);
+      };
 
-    reconocimiento.onerror = function (event) {
-      alert('Error al reconocer voz: ' + event.error);
+      reconocimiento.onerror = function (event) {
+        alert('Error al reconocer voz: ' + event.error);
+        ocultarCargaHablar();
+      };
+
+      reconocimiento.onend = function () {
+        ocultarCargaHablar();
+      };
+    } catch (error) {
+      alert("No se puede iniciar reconocimiento de voz. Verifica si el navegador tiene acceso al micrófono.");
       ocultarCargaHablar();
-    };
-
-    reconocimiento.onend = function () {
-      ocultarCargaHablar();
-    };
+    }
   }
 
   window.iniciarReconocimiento = iniciarReconocimiento;
