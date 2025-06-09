@@ -9,6 +9,7 @@ def procesar_comando(comando):
     comando = comando.lower()
     salas_600 = ["601", "602", "603", "604", "605"]
     salas_500 = ["501", "502", "503", "504", "505"]
+    salas_300 = ["301", "302", "303", "304", "305"]
 
     for sala in salas_600:
         if sala in comando:
@@ -17,6 +18,11 @@ def procesar_comando(comando):
     for sala in salas_500:
         if sala in comando:
             return f"La sala {sala} está en la sede principal en el quinto piso. Si usas el ascensor llegarás directamente."
+        
+    for sala in salas_300:
+        if sala in comando:
+            return f"La sala {sala} está en la sede Boulevard en el tercer piso. Si usas el ascensor llegarás directamente, recuerda que son preferenciales."
+
 
     if "sala 603" in comando and ("11:30" in comando or "once treinta" in comando or "a las once" in comando):
         return "En la sala 603 el día lunes tienes Habilidades de la Comunicación, desde las 11:30 hasta las 12:50 horas del medio día."
@@ -38,9 +44,12 @@ def procesar_comando(comando):
     elif ("modificaciones horarias" in comando or "beneficios" in comando or "becas" in comando or "gratuidad" in comando or "justificaciones" in comando):
         return "Para modificaciones horarias, beneficios estudiantiles, becas, gratuidad o presentar justificaciones, dirígete al Centro Académico en la sede principal de Plaza Vespucio, quinto piso."
     
-    elif ("Problema con cuenta" in comando):
-        return "Para Problema con cuenta dirígete al Servicios digitales en la sede Bullevard de Plaza Vespucio, tercer piso."
+    elif ("cuenta duoc" in comando or "correo" in comando):
+        return "Para Problema con tu cuenta Duoc o correo dirígete al Servicios digitales en la sede Boulevard de Plaza Vespucio, tercer piso."
     
+    elif ("bicicleta" in comando):
+        return "Para dejar tu bicicleta en Duoc, tienes dos opciones: dirígete al bicicletero en la sede Boulevard de Plaza Vespucio en el primer piso o ve a la sede principal en el quinto piso. No olvides llevar tu candado."
+  
     else:
         return "No entendí el comando. ¿Puedes repetirlo?"
 
