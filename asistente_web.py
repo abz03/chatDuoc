@@ -54,7 +54,13 @@ def procesar_comando(comando):
     
     elif ("bicicleta" in comando):
         return "Para dejar tu bicicleta en Duoc, tienes dos opciones: dirígete al bicicletero en la sede Boulevard de Plaza Vespucio en el primer piso o ve a la sede principal en el quinto piso. No olvides llevar tu candado."
-  
+   
+    elif ("nombre" in comando or 
+        "cómo te llamas" in comando or 
+        "quién eres" in comando or 
+        "qué cosas puedo preguntarte" in comando or 
+        "qué sabes sobre las salas" in comando):
+        return "Soy Duki Bot, tu asistente de voz. Puedes preguntarme por salas, ubicación, la hora o temas relacionados con servicios estudiantiles."
     else:
         return "No entendí el comando. ¿Puedes repetirlo?"
 
