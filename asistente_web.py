@@ -5,8 +5,6 @@ import os
 import re
 import requests
 
-
-
 app = Flask(__name__)
 
 # =========================
