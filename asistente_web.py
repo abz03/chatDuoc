@@ -5,15 +5,7 @@ import os
 import re
 import requests
 
-if __name__ == "__main__":
-    # === DEPURACIÓN ===
-    print("HF_TOKEN presente:", bool(os.getenv("HF_TOKEN")))
-    print("Modelo:", os.getenv("HF_MODEL"))
-    print("Timeout:", os.getenv("HF_TIMEOUT"))
-    print("Puerto Flask:", 5000)
-    # ==================
 
-    app.run(host="0.0.0.0", port=5000)
 
 app = Flask(__name__)
 
@@ -212,5 +204,9 @@ def comando():
         return jsonify({"respuesta": "Ocurrió un error en el servidor."}), 500
 
 if __name__ == "__main__":
+    print("HF_TOKEN presente:", bool(os.getenv("HF_TOKEN")))
+    print("Modelo:", os.getenv("HF_MODEL"))
+    print("Timeout:", os.getenv("HF_TIMEOUT"))
+    print("Puerto Flask:", 5000)
     app.run(host="0.0.0.0", port=5000)
 #Remiau
