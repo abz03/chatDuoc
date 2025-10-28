@@ -11,8 +11,8 @@ app = Flask(__name__)
 #   CONFIGURACIÓN IA HF
 # =========================
 # Serverless Inference API (gratis con límites). Requiere token como VAR de entorno.
-HF_TOKEN = os.getenv("HF_TOKEN")
-HF_MODEL = os.getenv("HF_MODEL", "google/gemma-2-2b-it")  # modelos liviano
+HF_TOKEN = os.getenv("HF_TOKEN")  # <-- pon esto en Render (Environment Variable)
+HF_MODEL = os.getenv("HF_MODEL", "google/gemma-2-2b-it")  # modelos livianos y capaces
 HF_TIMEOUT = int(os.getenv("HF_TIMEOUT", "12"))
 HF_API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
 
@@ -24,7 +24,7 @@ SYSTEM_PROMPT = (
     "Respuesta de 1 a 2 frases, sin markdown."
 )
 
-# Temas sensibles para evitar dañinas
+# Temas sensibles para evitar palabras dañinas
 SENSITIVE_PATTERNS = [
     r"horari[oa]s? exact[oa]s?",
     r"contraseñ[a|o]s?|claves?",
