@@ -13,7 +13,7 @@ app = Flask(__name__)
 # Serverless Inference API (gratis con límites). Requiere token como VAR de entorno.
 HF_TOKEN = os.getenv("HF_TOKEN")  # <-- pon esto en Render (Environment Variable)
 HF_MODEL = os.getenv("HF_MODEL", "google/gemma-2-2b-it")  # modelos livianos y capaces
-HF_TIMEOUT = int(os.getenv("HF_TIMEOUT", "12"))
+HF_TIMEOUT = int(os.getenv("HF_TIMEOUT", "60"))
 HF_API_URL = f"https://router.huggingface.co/hf-inference/{HF_MODEL}"
 
 # Instrucciones base para orientar respuestas (breve, útil, Chile/DUOC)
