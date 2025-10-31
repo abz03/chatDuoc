@@ -1,4 +1,10 @@
-Flask==3.0.3
-requests==2.32.3
-pytz==2024.1
-gunicorn==22.0.0
+# --- Core del proyecto ---
+Flask==3.0.3              # Framework web principal
+requests==2.32.3          # Para conectarte a Hugging Face API
+pytz==2024.1              # Manejo de zona horaria Chile/Santiago
+
+# --- Servidor de producción ---
+gunicorn==22.0.0          # Recomendado por Render para apps Flask
+
+# --- Opcional (mejora de logs legibles) ---
+simplejson==3.19.2        # (opcional) logs JSON más limpios en DEBUG_IA
