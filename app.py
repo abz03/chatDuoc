@@ -1,14 +1,10 @@
 # app.py
 # ------------------------------------------------------------
 # Backend principal de Duki Bot (Flask)
-# - Orquesta el flujo:
-#     1) Reglas predefinidas (reglas.procesar_reglas)
-#     2) IA (ia.responder_ia) si no hay match
-#     3) Fallback seguro si nada responde
-# - Expone endpoints:
-#     GET  /              -> index.html
-#     POST /api/comando   -> procesa texto del usuario
-#     GET  /api/ia-status -> estado/latencia del proveedor IA
+# Flujo:
+#  1) Reglas predefinidas (reglas.procesar_reglas)
+#  2) IA (ia.responder_ia) si no hay match
+#  3) Fallback seguro si nada responde
 # ------------------------------------------------------------
 
 from flask import Flask, request, jsonify, render_template
@@ -17,16 +13,15 @@ import pytz
 import os
 import time
 
-# Módulos locales
-import reglas
-import ia
+import reglas        # respuestas predefinidas
+import ia            # capa IA + healthcheck + telemetría
 
 app = Flask(__name__)
 
-# Mensaje de fallback si reglas e IA no responden
-FALLBACK_MSG = ("No entendí el comando con precisión. Si es sobre salas, ubicación, la hora "
-                "o trámites (Financiamiento, Centro Académico, Servicios Digitales), "
-                "cuéntame un poco más.")
+FALLBACK_MSG = (
+    "No entendí el comando con precisión. Si es sobre salas, ubicación, la hora o trámites "
+    "(Financiamiento, Centro Académico, Servicios Digitales), cuéntame un poco más."
+)
 
 @app.route("/", methods=["GET"])
 def index():
@@ -35,10 +30,10 @@ def index():
 @app.route("/api/comando", methods=["POST"])
 def comando():
     """
-    Flujo:
     - Intenta responder con reglas predefinidas (rápido, determinista).
     - Si no hay coincidencia, intenta IA.
-    - Si la IA falla o no responde, vuelve a fallback seguro.
+    - Si la IA falla/no responde, usa fallback.
+    Devuelve meta con engine, modelo, latencia y telemetría IA.
     """
     try:
         data = request.get_json()
@@ -52,7 +47,7 @@ def comando():
         respuesta = reglas.procesar_reglas(texto_usuario)
         engine = "rules" if respuesta else None
 
-        # 2) IA (solo si no hubo match de reglas)
+        # 2) IA
         if not respuesta:
             ia.log_debug("[IA-DEBUG] Sin match de reglas → intento IA")
             respuesta = ia.responder_ia(texto_usuario)
@@ -66,7 +61,8 @@ def comando():
                 "engine": engine,
                 "model": ia.HF_MODEL,
                 "hf_enabled": bool(ia.HF_TOKEN),
-                "elapsed_ms": elapsed_ms
+                "elapsed_ms": elapsed_ms,
+                "ia_last": ia.LAST  # telemetría de la última llamada a IA
             }
         }), 200
 
@@ -77,15 +73,33 @@ def comando():
 
 @app.route("/api/ia-status", methods=["GET"])
 def ia_status():
-    """
-    Endpoint de salud para validar conectividad y latencia de la IA.
-    No afecta el flujo normal.
-    """
+    """Healthcheck rápido: status/latencia/preview del router HF."""
     try:
         status = ia.ping_ia()
         return jsonify(status), 200
     except Exception as e:
         return jsonify({"ok": False, "error": repr(e)}), 200
+
+
+@app.route("/api/test-ia", methods=["POST"])
+def test_ia():
+    """Fuerza uso de IA (salta reglas) para diagnóstico."""
+    try:
+        data = request.get_json() or {}
+        texto = (data.get("texto") or "ping de prueba").strip()
+        started = time.perf_counter()
+        r = ia.responder_ia(texto)
+        elapsed_ms = int((time.perf_counter() - started) * 1000)
+        return jsonify({
+            "respuesta": r,
+            "meta": {
+                "engine": "ia_forced",
+                "elapsed_ms": elapsed_ms,
+                "ia_last": ia.LAST
+            }
+        }), 200
+    except Exception as e:
+        return jsonify({"error": repr(e)}), 500
 
 
 if __name__ == "__main__":

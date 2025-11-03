@@ -5,7 +5,8 @@
 # - Conexión: router nuevo (no el endpoint deprecado).
 # - Logs: activables con DEBUG_IA=1.
 # - Reintento: 1 retry si el modelo está en warming-up (503).
-# - Funciones públicas:
+# - Telemetría: dict LAST con info de la última llamada IA.
+# - API pública:
 #     responder_ia(texto) -> str | None
 #     ping_ia() -> dict (para /api/ia-status)
 # ------------------------------------------------------------
@@ -42,6 +43,18 @@ SENSITIVE_PATTERNS = [
     r"direcci[oó]n exacta|coordenadas",
 ]
 
+# Telemetría de la última llamada IA
+LAST = {
+    "called": False,
+    "attempt": 0,
+    "status": None,
+    "elapsed_ms": None,
+    "url": None,
+    "error": None,
+    "body_preview": None,
+    "used_model": None,
+}
+
 def log_debug(msg: str):
     if DEBUG_IA:
         print(msg)
@@ -58,17 +71,26 @@ def _safety_guard(user_text: str) -> str | None:
 
 def responder_ia(user_text: str) -> str | None:
     """
-    1) Aplica guard de seguridad (devuelve msg seguro si corresponde).
+    1) Guard de seguridad (devuelve msg seguro si corresponde).
     2) Llama al router de Hugging Face (con 1 reintento si 503).
     3) Devuelve texto breve o None si no hubo respuesta.
     """
-    # Guard primero
     guard_msg = _safety_guard(user_text)
     if guard_msg:
+        LAST.update({
+            "called": False, "attempt": 0, "status": None, "elapsed_ms": None,
+            "url": HF_API_URL, "error": "guard_blocked",
+            "body_preview": None, "used_model": HF_MODEL
+        })
         log_debug("[IA-DEBUG] Guard activado → contenido sensible.")
         return guard_msg
 
     if not HF_TOKEN:
+        LAST.update({
+            "called": False, "attempt": 0, "status": None, "elapsed_ms": None,
+            "url": HF_API_URL, "error": "no_token",
+            "body_preview": None, "used_model": HF_MODEL
+        })
         log_debug("[IA-DEBUG] HF_TOKEN ausente → no se llama IA.")
         return None
 
@@ -85,31 +107,20 @@ def responder_ia(user_text: str) -> str | None:
         }
     }
 
-    # 1 intento + 1 reintento si 503
-    for attempt in (1, 2):
+    for attempt in (1, 2):  # 1 intento + 1 retry si 503
         t0 = time.perf_counter()
         try:
-            log_debug(json.dumps({
-                "ia_call": "start",
-                "attempt": attempt,
-                "url": HF_API_URL,
-                "model": HF_MODEL,
-                "timeout": HF_TIMEOUT
-            }, ensure_ascii=False))
-
             resp = requests.post(HF_API_URL, headers=headers, json=payload, timeout=HF_TIMEOUT)
             elapsed = int((time.perf_counter() - t0) * 1000)
+            preview = resp.text[:300].replace("\n", " ")
 
-            log_debug(json.dumps({
-                "ia_call": "end",
-                "attempt": attempt,
-                "status": resp.status_code,
-                "elapsed_ms": elapsed,
-                "body_preview": resp.text[:300].replace("\n", " ")
-            }, ensure_ascii=False))
+            LAST.update({
+                "called": True, "attempt": attempt, "status": resp.status_code,
+                "elapsed_ms": elapsed, "url": HF_API_URL, "error": None,
+                "body_preview": preview, "used_model": HF_MODEL
+            })
 
             if resp.status_code == 200:
-                # Formatos típicos de retorno
                 data = resp.json()
                 text = ""
                 if isinstance(data, list) and data and "generated_text" in data[0]:
@@ -117,32 +128,33 @@ def responder_ia(user_text: str) -> str | None:
                 elif isinstance(data, dict) and "generated_text" in data:
                     text = (data["generated_text"] or "").strip()
                 elif isinstance(data, dict):
-                    # algunos backends devuelven estilo OpenAI
                     text = (data.get("choices", [{}])[0]
                                 .get("message", {})
                                 .get("content", "") or "").strip()
 
                 if text:
-                    # Limpieza y acotación
                     text = re.sub(r"\s+", " ", text)
                     if len(text) > 400:
                         text = text[:400].rstrip() + "..."
                     return text
 
-                log_debug("[IA-DEBUG] 200 OK pero sin texto generado.")
+                # 200 sin texto generado
                 return None
 
-            # warming-up → espera corto y reintenta una única vez
             if resp.status_code == 503 and attempt == 1:
                 time.sleep(2.5)
-                continue
+                continue  # reintenta una vez
 
-            # otros códigos: sin reintento adicional
+            # otros códigos → sin reintento extra
             return None
 
         except Exception as e:
-            log_debug(json.dumps({"ia_call": "exception", "error": repr(e)}, ensure_ascii=False))
-            # Si fue la primera, reintenta; en la segunda, retorna None
+            LAST.update({
+                "called": True, "attempt": attempt, "status": None,
+                "elapsed_ms": int((time.perf_counter() - t0) * 1000),
+                "url": HF_API_URL, "error": repr(e),
+                "body_preview": None, "used_model": HF_MODEL
+            })
             if attempt == 1:
                 time.sleep(1.5)
                 continue
@@ -153,8 +165,8 @@ def responder_ia(user_text: str) -> str | None:
 
 def ping_ia() -> dict:
     """
-    Realiza un ping rápido al router para monitoreo/healthcheck.
-    Devuelve dict con ok/status/elapsed/preview.
+    Healthcheck: ping rápido al router.
+    Devuelve ok/status/elapsed/model/url/preview.
     """
     try:
         if not HF_TOKEN:

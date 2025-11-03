@@ -1,7 +1,7 @@
 # reglas.py
 # ------------------------------------------------------------
 # Respuestas predefinidas y flujo determinista original.
-# Devuelve un string si hay match; si no, devuelve None.
+# Devuelve string si hay match; si no, devuelve None.
 # ------------------------------------------------------------
 
 from datetime import datetime
@@ -67,5 +67,5 @@ def procesar_reglas(comando: str) -> str | None:
         "qué sabes sobre las salas" in c):
         return "Soy Duki Bot, tu asistente de voz. Puedes preguntarme por salas, ubicación, la hora o temas relacionados con servicios estudiantiles."
 
-    # Si no hubo match, devolver None para que app.py intente IA
+    # Sin match → que app.py intente IA
     return None
