@@ -19,7 +19,7 @@ import requests
 
 # Flags y configuración desde entorno
 HF_TOKEN = os.getenv("HF_TOKEN")
-HF_MODEL = os.getenv("HF_MODEL", "google/gemma-2-2b-it")
+HF_MODEL = os.getenv("HF_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
 HF_TIMEOUT = int(os.getenv("HF_TIMEOUT", "12"))
 DEBUG_IA = os.getenv("DEBUG_IA", "0") == "1"
 
