@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", function () {
   const formulario = document.getElementById("formularioTexto");
   const entradaTexto = document.getElementById("textoEntrada");
@@ -29,19 +28,31 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const reconocimiento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       reconocimiento.lang = 'es-ES';
+
+      // TIMEOUT PARA EL RECONOCIMIENTO DE VOZ (40 s)
+      const timeoutVozId = setTimeout(() => {
+        reconocimiento.abort(); // corta el reconocimiento si se pasó el tiempo
+        ocultarCargaHablar();
+        mostrarError("El reconocimiento de voz tardó demasiado. Intenta nuevamente.");
+      }, 40000);
+
       reconocimiento.start();
 
       reconocimiento.onresult = function (event) {
+        clearTimeout(timeoutVozId); // llegó algo, cancelamos el timeout
         const texto = event.results[0][0].transcript;
         enviarComando(texto, ocultarCargaHablar);
       };
 
       reconocimiento.onerror = function (event) {
+        clearTimeout(timeoutVozId);
         alert('Error al reconocer voz: ' + event.error);
         ocultarCargaHablar();
       };
 
       reconocimiento.onend = function () {
+        clearTimeout(timeoutVozId);
+        // Si llegó a onend sin resultado, ocultamos el spinner
         ocultarCargaHablar();
       };
     } catch (error) {
@@ -53,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // para llamarlo desde el HTML
   window.iniciarReconocimiento = iniciarReconocimiento;
 
-  // TIMEOUT DE 40 segundos
+  // TIMEOUT DE 40 segundos PARA EL BACKEND
   function enviarComando(texto, callbackFinCarga) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
@@ -79,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch((error) => {
       if (error.name === "AbortError") {
         // Timeout alcanzado
-        mostrarError("El sistema está tardando demasiado en responder (timeout de 1 minuto). Por favor intenta nuevamente.");
+        mostrarError("El sistema está tardando demasiado en responder (timeout de 40 segundos). Por favor intenta nuevamente.");
       } else {
         mostrarError("Error al procesar el comando. Intenta otra vez más tarde.");
         console.error(error);
