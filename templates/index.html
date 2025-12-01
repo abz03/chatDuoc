@@ -35,13 +35,31 @@
       max-width: 120px;
       margin-bottom: 15px;
     }
+
+    .btn-encuesta {
+      background-color: #E4AE23;
+      border: none;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .btn-encuesta:hover {
+      background-color: #FDD528;
+      color: #002445;
+    }
   </style>
 </head>
+
 <body class="d-flex flex-column justify-content-center align-items-center vh-100">
+
+  <!-- Tarjeta principal -->
   <div class="card shadow p-4 text-center" style="width: 100%; max-width: 420px;">
     <h1 class="mb-2">Duki Bot</h1>
     <img src="/static/img/bot.png" alt="Duki Bot" class="bot-img mx-auto d-block">
-    <h6 class="mb-3">Bienvenido al sistema de chat por voz, para resolver tu duda por favor escribe o haz click en "Hablar" y di tu duda, después de unos segundos te responderemos.</h6>
+    <h6 class="mb-3">
+      Bienvenido al sistema de chat por voz. Para resolver tu duda, escribe o haz click en "Hablar" 
+      y di tu consulta. En unos segundos te responderemos.
+    </h6>
 
     <form id="formularioTexto" class="mb-3">
       <input type="text" id="textoEntrada" class="form-control mb-2" placeholder="Escribe tu pregunta..." required>
@@ -66,6 +84,12 @@
       <p id="respuesta"></p>
     </div>
   </div>
+  
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLScEFrF0ec7ORnIPNwDAjCVFZ2kkP9DRcMVWlvkzVtIOhO8qhg/viewform?usp=dialog" 
+     target="_blank"
+     class="btn btn-primary btn-encuesta text-center">
+     Encuesta (menos de 5 min)
+  </a>
 
   <script src="/static/js/main.js"></script>
 </body>
